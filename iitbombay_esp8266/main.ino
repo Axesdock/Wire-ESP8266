@@ -122,9 +122,10 @@ void control_event(String operation, int port )
     if(operation=="OFF"){
       digitalWrite(portmap[port],0);
       port_status[port] = 0;
+      Serial.printf("\n Turing OFF %d \n\n", port);
     }
     else{
-      Serial.print("Operation is on to port"+port);
+      Serial.printf("\n Turning ON %d \n\n ",port);
       digitalWrite(portmap[port],1);
       port_status[port] = 1;
     }
@@ -250,6 +251,24 @@ void setup() {
         write_to_eeprom("WS_PORT",qwsport);
     }
     
+    request->send(200, "application/json","{\"status\":200}");
+  });
+
+  server.on("/control", HTTP_GET, [](AsyncWebServerRequest *request){
+    
+    if (request->hasParam("port")) {
+        String port = request->getParam("port")->value();
+        String control = request->getParam("control")->value();
+        if(control.toInt() == 0){
+          control_event("OFF",port.toInt());
+        }else{
+          control_event("ON",port.toInt());
+        }
+      Serial.print("Control : "+port+" "+control+"\n\n\n");
+        
+    }
+
+   
     request->send(200, "application/json","{\"status\":200}");
   });
 
